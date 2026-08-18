@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام متابعة وحصر البريد الإلكتروني | الهيئة العامة للرعاية الصحية</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-right">
+                <div class="logo-box">
+                    <i class="fa-solid fa-hospital-user logo-icon"></i>
+                </div>
+                <div class="header-titles">
+                    <span class="sub-badge"><i class="fa-solid fa-shield-halved"></i> الهيئة العامة للرعاية الصحية - فرع الأقصر</span>
+                    <h1 class="main-title">نظام إدارة ومتابعة وحصر البريد الإلكتروني</h1>
+                    <p class="account-tag"><i class="fa-regular fa-envelope"></i> luxortechoffice@eha.gov.eg</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <!-- Sync Dropdown -->
+                <div class="sync-dropdown-wrapper">
+                    <button id="btnSync" class="btn btn-primary btn-glow" onclick="toggleSyncMenu()">
+                        <i class="fa-solid fa-arrows-rotate" id="syncIcon"></i>
+                        <span>سحب وتحديث البريد</span>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-right: 4px;"></i>
+                    </button>
+                    <div id="syncMenu" class="dropdown-menu">
+                        <button onclick="startSync(50)"><i class="fa-solid fa-bolt"></i> سحب أحدث 50 إيميل (سريع)</button>
+                        <button onclick="startSync(100)"><i class="fa-solid fa-envelope-open-text"></i> سحب أحدث 100 إيميل</button>
+                        <button onclick="startSync(500)"><i class="fa-solid fa-layer-group"></i> سحب أحدث 500 إيميل</button>
+                        <button onclick="startSync(1000)"><i class="fa-solid fa-database"></i> سحب أحدث 1000 إيميل</button>
+                        <button onclick="startSync(0)"><i class="fa-solid fa-globe"></i> سحب كافة الرسائل (الكل - 3,300+)</button>
+                        <hr style="margin: 6px 0; border: none; border-top: 1px solid var(--border-color);">
+                        <button onclick="openSyncModal()"><i class="fa-solid fa-sliders"></i> خيارات متقدمة وسحب بالتواريخ...</button>
+                    </div>
+                </div>
+
+                <a href="/report" target="_blank" class="btn btn-primary" title="عرض وطباعة تقرير الحصر الشامل">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>تقرير الحصر (PDF)</span>
+                </a>
+
+                <button class="btn btn-excel" onclick="openExcelDesktop()" title="فتح ملف الإكسيل مباشرة على الكمبيوتر">
+                    <i class="fa-solid fa-file-excel"></i>
+                    <span>فتح الإكسيل</span>
+                </button>
+
+                <button class="btn btn-folder" onclick="openAttachmentsFolder()" title="فتح مجلد المرفقات في الويندوز">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>مجلد المرفقات</span>
+                </button>
+
+                <button class="btn btn-secondary" onclick="openCompareModal()" title="مقارنة إيميلين جنباً إلى جنب">
+                    <i class="fa-solid fa-code-compare"></i>
+                    <span>مقارنة إيميلين</span>
+                </button>
+
+                <button class="btn btn-icon" id="themeToggle" onclick="toggleTheme()" title="تبديل المظهر">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Live Sync Progress Banner (Hidden by default) -->
+        <div id="syncProgressBanner" class="sync-banner" style="display: none;">
+            <div class="sync-banner-content">
+                <div class="sync-status-info">
+                    <div class="spinner-mini"></div>
+                    <span id="syncStepText">جاري الاتصال بخادم البريد...</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="syncProgressBar" class="progress-bar-fill" style="width: 5%;"></div>
+                </div>
+                <span id="syncPercentageText" class="sync-percent-badge">5%</span>
+            </div>
+        </div>
+
+        <!-- KPI Metrics Overview -->
+        <section class="kpi-grid">
+            <div class="kpi-card card-unreplied" onclick="filterByTab('inbox_unreplied')">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-label">وارد لم يتم الرد عليه</span>
+                    <h2 class="kpi-value highlight-red" id="statInboxUnreplied">0</h2>
+                </div>
+                <div class="kpi-tag alert-tag">معلق بالمكتب الفني</div>
+            </div>
+
+            <div class="kpi-card card-sent-unreplied" onclick="filterByTab('sent_unreplied')">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-label">صادر بانتظار رد الجهات</span>
+                    <h2 class="kpi-value highlight-gold" id="statSentUnreplied">0</h2>
+                </div>
+                <div class="kpi-tag warning-tag">معلق لدى الجهات</div>
+            </div>
+
+            <div class="kpi-card card-replied" onclick="filterByTab('inbox_replied')">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-label">وارد تم الرد عليه</span>
+                    <h2 class="kpi-value highlight-green" id="statInboxReplied">0</h2>
+                </div>
+                <div class="kpi-tag success-tag">مكتمل الرد</div>
+            </div>
+
+            <div class="kpi-card card-sent-replied" onclick="filterByTab('sent_replied')">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-envelope-circle-check"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-label">صادر تم استلام رده</span>
+                    <h2 class="kpi-value" id="statSentReplied">0</h2>
+                </div>
+                <div class="kpi-tag success-tag">ورد الرد</div>
+            </div>
+
+            <div class="kpi-card card-inbox" onclick="filterByTab('inbox_all')">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-inbox"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-label">إجمالي الوارد</span>
+                    <h2 class="kpi-value" id="statInboxTotal">0</h2>
+                </div>
+            </div>
+
+            <div class="kpi-card card-sent" onclick="filterByTab('sent_all')">
+                <div class="kpi-icon-wrap"><i class="fa-solid fa-paper-plane"></i></div>
+                <div class="kpi-data">
+                    <span class="kpi-label">إجمالي الصادر</span>
+                    <h2 class="kpi-value" id="statSentTotal">0</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Area -->
+        <main class="main-panel">
+            <!-- Filter Tabs & Date Bar -->
+            <div class="panel-toolbar">
+                <div class="tabs-nav">
+                    <button class="tab-btn active tab-badge-red" data-tab="inbox_unreplied" onclick="switchTab('inbox_unreplied')">
+                        <i class="fa-solid fa-triangle-exclamation"></i> وارد لم يُرد عليه
+                        <span class="badge" id="badgeInboxUnreplied">0</span>
+                    </button>
+                    <button class="tab-btn tab-badge-gold" data-tab="sent_unreplied" onclick="switchTab('sent_unreplied')">
+                        <i class="fa-solid fa-clock"></i> صادر بانتظار ردهم
+                        <span class="badge badge-gold" id="badgeSentUnreplied">0</span>
+                    </button>
+                    <button class="tab-btn tab-badge-green" data-tab="inbox_replied" onclick="switchTab('inbox_replied')">
+                        <i class="fa-solid fa-check-double"></i> وارد تم الرد عليه
+                    </button>
+                    <button class="tab-btn" data-tab="sent_replied" onclick="switchTab('sent_replied')">
+                        <i class="fa-solid fa-reply-all"></i> صادر مستلم رده
+                    </button>
+                    <button class="tab-btn" data-tab="inbox_all" onclick="switchTab('inbox_all')">
+                        <i class="fa-solid fa-inbox"></i> كافة الوارد
+                    </button>
+                    <button class="tab-btn" data-tab="sent_all" onclick="switchTab('sent_all')">
+                        <i class="fa-solid fa-paper-plane"></i> كافة الصادر
+                    </button>
+                    <button class="tab-btn" data-tab="has_attachments" onclick="switchTab('has_attachments')">
+                        <i class="fa-solid fa-paperclip"></i> به مرفقات
+                    </button>
+                    <button class="tab-btn" data-tab="all" onclick="switchTab('all')">
+                        <i class="fa-solid fa-layer-group"></i> كافة الرسائل
+                    </button>
+                </div>
+
+                <!-- Date Range & Search Section -->
+                <div class="search-and-actions">
+                    <div class="date-filter-box">
+                        <input type="date" id="dateFilterStart" title="من تاريخ" onchange="handleDateFilter()">
+                        <span>إلى</span>
+                        <input type="date" id="dateFilterEnd" title="إلى تاريخ" onchange="handleDateFilter()">
+                        <button class="btn-clear-date" id="clearDateBtn" onclick="clearDateFilter()" title="إلغاء فلتر التاريخ" style="display:none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="بحث في الموضوع، الطرف الآخر، أو التلخيص..." oninput="handleSearch()">
+                        <button class="clear-search" id="clearSearchBtn" onclick="clearSearch()" style="display:none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <a href="/api/export-excel" class="btn btn-outline" title="تحميل نسخة من ملف الإكسيل">
+                        <i class="fa-solid fa-download"></i>
+                        <span>تنزيل Excel</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Emails Table / List -->
+            <div class="table-container">
+                <table class="emails-table" id="emailsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">م</th>
+                            <th style="width: 120px;">الحالة</th>
+                            <th style="width: 140px;">التاريخ والوقت</th>
+                            <th style="width: 200px;">الطرف الآخر (المرسل/المستلم)</th>
+                            <th>الموضوع والملخص التنفيذي</th>
+                            <th style="width: 90px; text-align: center;">المرفقات</th>
+                            <th style="width: 130px; text-align: center;">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emailsTableBody">
+                        <tr>
+                            <td colspan="7" class="loading-state">
+                                <div class="spinner"></div>
+                                <p>جاري تحميل البيانات من ملف الإكسيل...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-bar">
+                <div class="pagination-info" id="paginationInfo">عرض 0 من 0 إيميل</div>
+                <div class="pagination-controls">
+                    <button class="page-nav-btn" id="prevPageBtn" onclick="changePage(-1)" disabled>
+                        <i class="fa-solid fa-chevron-right"></i> السابق
+                    </button>
+                    <span class="page-current" id="currentPageText">صفحة 1 من 1</span>
+                    <button class="page-nav-btn" id="nextPageBtn" onclick="changePage(1)" disabled>
+                        التالي <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Email Details -->
+    <div id="emailDetailModal" class="modal-backdrop" style="display:none;" onclick="closeModalOnBackdrop(event, 'emailDetailModal')">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-status-badge" id="modalStatusBadge">تم الرد</span>
+                    <h3 id="modalSubject">موضوع الرسالة</h3>
+                </div>
+                <button class="btn-close" onclick="closeModal('emailDetailModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Meta Info Bar -->
+                <div class="email-meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label"><i class="fa-solid fa-user"></i> المرسل:</span>
+                        <span class="meta-val" id="modalSender"></span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label"><i class="fa-solid fa-calendar-days"></i> التاريخ:</span>
+                        <span class="meta-val" id="modalDate"></span>
+                    </div>
+                    <div class="meta-item" id="modalRepliedByRow" style="display:none;">
+                        <span class="meta-label"><i class="fa-solid fa-reply"></i> تم الرد بواسطة:</span>
+                        <span class="meta-val highlight-green" id="modalRepliedBy"></span>
+                    </div>
+                    <div class="meta-item" id="modalReplyDateRow" style="display:none;">
+                        <span class="meta-label"><i class="fa-solid fa-clock"></i> تاريخ الرد:</span>
+                        <span class="meta-val" id="modalReplyDate"></span>
+                    </div>
+                </div>
+
+                <!-- Executive Summary Box -->
+                <div class="summary-box">
+                    <div class="box-title"><i class="fa-solid fa-wand-magic-sparkles"></i> الملخص الذكي والتكليفات المطلوبة</div>
+                    <p class="summary-text" id="modalSummary"></p>
+                    <div id="modalActionsList" class="actions-tags"></div>
+                </div>
+
+                <!-- Attachments Section -->
+                <div class="attachments-section" id="modalAttachmentsSection" style="display:none;">
+                    <div class="box-title"><i class="fa-solid fa-paperclip"></i> المرفقات المتاحة (<span id="modalAttachmentsCount">0</span>)</div>
+                    <div class="attachments-grid" id="modalAttachmentsList"></div>
+                </div>
+
+                <!-- Full Message Body -->
+                <div class="body-section">
+                    <div class="box-title"><i class="fa-regular fa-file-lines"></i> النص الكامل للرسالة</div>
+                    <div class="email-body-content" id="modalBody"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('emailDetailModal')">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Side-by-Side Comparator -->
+    <div id="compareModal" class="modal-backdrop" style="display:none;" onclick="closeModalOnBackdrop(event, 'compareModal')">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i class="fa-solid fa-code-compare modal-icon"></i>
+                    <h3>أداة المقارنة الذكية بين الإيميلات</h3>
+                </div>
+                <button class="btn-close" onclick="closeModal('compareModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="compare-selectors">
+                    <div class="select-col">
+                        <label>اختر الإيميل الأول (أ):</label>
+                        <select id="compareSelectA" class="form-select" onchange="runComparison()"></select>
+                    </div>
+                    <div class="compare-vs-badge">VS</div>
+                    <div class="select-col">
+                        <label>اختر الإيميل الثاني (ب):</label>
+                        <select id="compareSelectB" class="form-select" onchange="runComparison()"></select>
+                    </div>
+                </div>
+
+                <!-- Comparison Result Cards -->
+                <div id="compareResultContainer" style="display:none;">
+                    <div class="similarity-banner">
+                        <span>نسبة التطابق والتشابه في المحتوى:</span>
+                        <span class="sim-score" id="simScore">0%</span>
+                    </div>
+
+                    <div class="compare-grid">
+                        <!-- Email A Box -->
+                        <div class="compare-card">
+                            <div class="compare-card-header">الإيميل الأول (أ)</div>
+                            <h4 id="compSubjA"></h4>
+                            <div class="comp-meta" id="compMetaA"></div>
+                            <div class="comp-summary" id="compSummA"></div>
+                            <div class="comp-attachments" id="compAttA"></div>
+                            <div class="comp-body-preview" id="compBodyA"></div>
+                        </div>
+
+                        <!-- Email B Box -->
+                        <div class="compare-card">
+                            <div class="compare-card-header">الإيميل الثاني (ب)</div>
+                            <h4 id="compSubjB"></h4>
+                            <div class="comp-meta" id="compMetaB"></div>
+                            <div class="comp-summary" id="compSummB"></div>
+                            <div class="comp-attachments" id="compAttB"></div>
+                            <div class="comp-body-preview" id="compBodyB"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Modal: Sync Options & Date Range -->
+    <div id="syncOptionsModal" class="modal-backdrop" style="display:none;" onclick="closeModalOnBackdrop(event, 'syncOptionsModal')">
+        <div class="modal-content modal-md">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i class="fa-solid fa-sliders modal-icon" style="color:var(--eha-blue);"></i>
+                    <h3>خيارات سحب ومزامنة البريد (القديم والحديث)</h3>
+                </div>
+                <button class="btn-close" onclick="closeModal('syncOptionsModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+                <p style="font-size:0.9rem; color:var(--text-secondary); line-height:1.6;">
+                    يمكنك سحب الرسائل القديمة بدقة حسب النطاق الزمني أو تعيين الحد الأقصى، مع إمكانية دمجها مباشرة بالأرشيف المحفوظ.
+                </p>
+
+                <!-- Date Range Selection -->
+                <div style="background:var(--bg-primary); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                    <label style="font-weight:700; font-size:0.9rem; margin-bottom:8px; display:block;">
+                        <i class="fa-regular fa-calendar-days"></i> النطاق الزمني (تاريخ الرسائل):
+                    </label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div>
+                            <span style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">من تاريخ:</span>
+                            <input type="date" id="syncStartDate" class="form-select" style="width:100%;">
+                        </div>
+                        <div>
+                            <span style="font-size:0.8rem; color:var(--text-muted); display:block; margin-bottom:4px;">إلى تاريخ:</span>
+                            <input type="date" id="syncEndDate" class="form-select" style="width:100%;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Limit Selection -->
+                <div style="background:var(--bg-primary); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                    <label style="font-weight:700; font-size:0.9rem; margin-bottom:8px; display:block;">
+                        <i class="fa-solid fa-layer-group"></i> الحد الأقصى لعدد الرسائل:
+                    </label>
+                    <select id="syncLimitSelect" class="form-select" style="width:100%;">
+                        <option value="50">أحدث 50 إيميل (سريع جداً)</option>
+                        <option value="100">أحدث 100 إيميل</option>
+                        <option value="250">أحدث 250 إيميل</option>
+                        <option value="500">أحدث 500 إيميل</option>
+                        <option value="1000">أحدث 1000 إيميل</option>
+                        <option value="2000">أحدث 2000 إيميل</option>
+                        <option value="0">سحب كافة الرسائل بالكامل (الكل - 3,300+)</option>
+                    </select>
+                </div>
+
+                <!-- Options Checkboxes -->
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.875rem; cursor:pointer; font-weight:600;">
+                        <input type="checkbox" id="syncMergeCheck" checked style="width:18px; height:18px; accent-color:var(--eha-navy);">
+                        <span>دمج الرسائل مع الأرشيف المحفوظ سابقاً (الحفاظ على القديم)</span>
+                    </label>
+
+                    <label style="display:flex; align-items:center; gap:10px; font-size:0.875rem; cursor:pointer; font-weight:600;">
+                        <input type="checkbox" id="syncDownloadFilesCheck" checked style="width:18px; height:18px; accent-color:var(--eha-navy);">
+                        <span>تنزيل ملفات المرفقات الفعلية إلى الجهاز (إلغاء التحديد يسرّع السحب الضخم)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display:flex; justify-content:space-between; align-items:center;">
+                <button class="btn btn-secondary" onclick="closeModal('syncOptionsModal')">إلغاء</button>
+                <button class="btn btn-primary btn-glow" onclick="executeCustomSync()">
+                    <i class="fa-solid fa-play"></i>
+                    <span>بدء المزامنة الآن</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast-box"></div>
+
+    <!-- Scripts -->
+    <script src="/static/js/app.js?v=3"></script>
+</body>
+</html>

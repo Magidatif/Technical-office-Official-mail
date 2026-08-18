@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير حصر المراسلات المعلقة حسب التواريخ | المكتب الفني بالأقصر</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --navy: #1b365d;
+            --red: #dc2626;
+            --gold: #d97706;
+            --green: #16a34a;
+            --gray-bg: #f8fafc;
+            --border: #e2e8f0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            padding: 20px;
+            direction: rtl;
+        }
+        .report-container {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        /* Filter Control Bar */
+        .filter-control-bar {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .filter-inputs {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .filter-field {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .filter-field input, .filter-field select {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .btn-filter {
+            background: var(--navy);
+            color: #fff;
+            padding: 7px 14px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-reset {
+            background: #e2e8f0;
+            color: #475569;
+            padding: 7px 12px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* Printable Document Sheet */
+        .report-page {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            padding: 36px 40px;
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--navy);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+        .header-title h1 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+        .header-title p {
+            font-size: 0.9rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .print-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-print { background: var(--navy); color: #fff; }
+        .btn-back { background: #e2e8f0; color: #334155; }
+        
+        .kpi-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        .kpi-summary-table td {
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+        .kpi-summary-table .lbl {
+            background: var(--gray-bg);
+            font-weight: 700;
+            width: 35%;
+        }
+        .kpi-summary-table .val {
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
+
+        .main-category-title {
+            font-size: 1.2rem;
+            font-weight: 900;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin: 30px 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cat-red { background: #fee2e2; color: #991b1b; border-right: 6px solid var(--red); }
+        .cat-gold { background: #fef3c7; color: #92400e; border-right: 6px solid var(--gold); }
+
+        .date-group-card {
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .date-group-header {
+            background: #f8fafc;
+            padding: 10px 16px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .date-badge {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.825rem;
+        }
+        .report-table th {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 8px 12px;
+            font-weight: 700;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+        }
+        .report-table td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+        .report-table tr:last-child td { border-bottom: none; }
+        .report-table tr:hover { background: #fafafa; }
+        
+        .badge-att {
+            display: inline-block;
+            background: #fef3c7;
+            color: #b45309;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+        }
+        .req-action {
+            margin-top: 4px;
+            font-size: 0.78rem;
+            color: #b91c1c;
+            font-weight: 700;
+        }
+        .time-tag {
+            color: #64748b;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        @media print {
+            body { padding: 0; background: #fff; }
+            .report-page { box-shadow: none; padding: 0; }
+            .filter-control-bar, .print-actions { display: none; }
+            .main-category-title { page-break-after: avoid; }
+            .date-group-card { page-break-inside: avoid; margin-bottom: 16px; }
+            tr { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="report-container">
+    <!-- Filter Control Bar (Screen only) -->
+    <div class="filter-control-bar">
+        <form method="GET" action="/report" class="filter-inputs">
+            <div class="filter-field">
+                <label><i class="fa-regular fa-calendar"></i> من تاريخ:</label>
+                <input type="date" name="start" value="{{ start_date }}">
+            </div>
+            <div class="filter-field">
+                <label><i class="fa-regular fa-calendar"></i> إلى تاريخ:</label>
+                <input type="date" name="end" value="{{ end_date }}">
+            </div>
+            <div class="filter-field">
+                <label><i class="fa-solid fa-filter"></i> نوع المراسلات:</label>
+                <select name="type">
+                    <option value="all_unreplied" {% if rep_type == 'all_unreplied' %}selected{% endif %}>كافة المعلق (وارد + صادر)</option>
+                    <option value="inbox_unreplied" {% if rep_type == 'inbox_unreplied' %}selected{% endif %}>وارد لم يُرد عليه فقط</option>
+                    <option value="sent_unreplied" {% if rep_type == 'sent_unreplied' %}selected{% endif %}>صادر بانتظار ردهم فقط</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-filter"><i class="fa-solid fa-magnifying-glass"></i> تطبيق الفلتر</button>
+            {% if start_date or end_date or rep_type != 'all_unreplied' %}
+                <a href="/report" class="btn-reset"><i class="fa-solid fa-xmark"></i> إلغاء الفلتر</a>
+            {% endif %}
+        </form>
+
+        <div class="print-actions">
+            <button class="btn btn-print" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة / حفظ PDF</button>
+            <a href="/" class="btn btn-back"><i class="fa-solid fa-arrow-right"></i> لوحة التحكم</a>
+        </div>
+    </div>
+
+    <!-- Printable Document Sheet -->
+    <div class="report-page">
+        <!-- Header -->
+        <div class="report-header">
+            <div class="header-title">
+                <h1>الهيئة العامة للرعاية الصحية - فرع الأقصر</h1>
+                <p>المكتب الفني | تقرير حصر المراسلات المعلقة مقسمة بالتواريخ الزمنية</p>
+                {% if start_date or end_date %}
+                    <p style="color: #0284c7; font-size: 0.825rem; margin-top: 4px;">
+                        <i class="fa-regular fa-calendar-check"></i> 
+                        الفترة الزمنية المحددة: من <strong>{{ start_date or 'البداية' }}</strong> إلى <strong>{{ end_date or 'اليوم' }}</strong>
+                    </p>
+                {% endif %}
+            </div>
+            <div class="header-logo">
+                <i class="fa-solid fa-hospital-user" style="font-size: 2.2rem; color: var(--navy);"></i>
+            </div>
+        </div>
+
+        <!-- KPI Summary Table -->
+        <table class="kpi-summary-table">
+            <tr>
+                <td class="lbl">🚨 الوارد المعلق (لم يتم الرد عليه من المكتب الفني):</td>
+                <td class="val" style="color: var(--red);">{{ inbox_unreplied|length }} رسالة</td>
+                <td class="lbl">⏳ الصادر المعلق (بانتظار رد الجهات الخارجية):</td>
+                <td class="val" style="color: var(--gold);">{{ sent_unreplied|length }} رسالة</td>
+            </tr>
+            <tr>
+                <td class="lbl">📥 إجمالي الوارد المحصور:</td>
+                <td class="val">{{ total_inbox }}</td>
+                <td class="lbl">📤 إجمالي الصادر المحصور:</td>
+                <td class="val">{{ total_sent }}</td>
+            </tr>
+        </table>
+
+        <!-- ============================================================= -->
+        <!-- 1. الرسائل الواردة المعلقة مقسمة بالتواريخ -->
+        <!-- ============================================================= -->
+        {% if rep_type in ['all_unreplied', 'inbox_unreplied'] %}
+        <div class="main-category-title cat-red">
+            <div>
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>أولاً: الرسائل الواردة المعلقة (لم يتم الرد عليها) - الإجمالي: {{ inbox_unreplied|length }}</span>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 700;">مرتبة من الأحدث إلى الأقدم</span>
+        </div>
+
+        {% if inbox_by_day %}
+            {% for day_date, items in inbox_by_day.items() %}
+            <div class="date-group-card">
+                <div class="date-group-header">
+                    <span><i class="fa-regular fa-calendar-days" style="color: var(--red); margin-left: 6px;"></i> 📅 تاريخ: <strong>{{ day_date }}</strong></span>
+                    <span class="date-badge">عدد: {{ items|length }} رسائل</span>
+                </div>
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">م</th>
+                            <th style="width: 75px;">الوقت</th>
+                            <th style="width: 200px;">المرسل</th>
+                            <th>الموضوع والملخص التنفيذي</th>
+                            <th style="width: 230px;">التكليف المطلوب</th>
+                            <th style="width: 70px; text-align: center;">المرفقات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td style="text-align: center; font-weight: 700; color: #94a3b8;">{{ loop.index }}</td>
+                            <td><span class="time-tag">{{ item.datetime_received[11:16] if item.datetime_received else '-' }}</span></td>
+                            <td><strong>{{ item.sender_name or item.sender_email }}</strong></td>
+                            <td>
+                                <strong>{{ item.subject }}</strong>
+                                <p style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">{{ item.summary }}</p>
+                            </td>
+                            <td>
+                                {% if item.actions %}
+                                    <div class="req-action">📌 {{ item.actions[0] }}</div>
+                                {% else %}
+                                    <span style="color: #94a3b8;">للدراسة والتوجيه</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: center;">
+                                {% if item.attachments %}
+                                    <span class="badge-att">{{ item.attachments|length }} ملفات</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; padding: 20px; color: #64748b;">لا توجد رسائل واردة معلقة مطابقة للفترة المحددة.</p>
+        {% endif %}
+        {% endif %}
+
+        <!-- ============================================================= -->
+        <!-- 2. الرسائل الصادرة المعلقة مقسمة بالتواريخ -->
+        <!-- ============================================================= -->
+        {% if rep_type in ['all_unreplied', 'sent_unreplied'] %}
+        <div class="main-category-title cat-gold">
+            <div>
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>ثانياً: الرسائل الصادرة المعلقة (بانتظار رد الجهات) - الإجمالي: {{ sent_unreplied|length }}</span>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 700;">مرتبة من الأحدث إلى الأقدم</span>
+        </div>
+
+        {% if sent_by_day %}
+            {% for day_date, items in sent_by_day.items() %}
+            <div class="date-group-card">
+                <div class="date-group-header">
+                    <span><i class="fa-regular fa-calendar-days" style="color: var(--gold); margin-left: 6px;"></i> 📅 تاريخ الإرسال: <strong>{{ day_date }}</strong></span>
+                    <span class="date-badge">عدد: {{ items|length }} مراسلات</span>
+                </div>
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">م</th>
+                            <th style="width: 75px;">الوقت</th>
+                            <th style="width: 230px;">الجهة الصادر إليها</th>
+                            <th>الموضوع الصادر والملخص</th>
+                            <th style="width: 80px; text-align: center;">المرفقات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td style="text-align: center; font-weight: 700; color: #94a3b8;">{{ loop.index }}</td>
+                            <td><span class="time-tag">{{ item.datetime_sent[11:16] if item.datetime_sent else '-' }}</span></td>
+                            <td><strong>{{ item.to_recipients_names|join(', ') if item.to_recipients_names else (item.to_recipients_emails|join(', ') if item.to_recipients_emails else 'الجهات المعنية') }}</strong></td>
+                            <td>
+                                <strong>{{ item.subject }}</strong>
+                                <p style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">{{ item.summary }}</p>
+                            </td>
+                            <td style="text-align: center;">
+                                {% if item.attachments %}
+                                    <span class="badge-att">{{ item.attachments|length }} ملفات</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; padding: 20px; color: #64748b;">لا توجد مراسلات صادرة معلقة مطابقة للفترة المحددة.</p>
+        {% endif %}
+        {% endif %}
+
+        <!-- Footer -->
+        <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 14px; display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748b;">
+            <span>المكتب الفني - الهيئة العامة للرعاية الصحية بالأقصر</span>
+            <span>تاريخ استخراج التقرير: {{ last_sync[:16].replace('T', ' ') if last_sync else '' }}</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+attachments/
+data_cache.json
+emails_registry.xlsx
+cloudflared.exe
