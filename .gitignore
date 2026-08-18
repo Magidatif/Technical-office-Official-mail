@@ -10,4 +10,3 @@ venv/
 attachments/
 data_cache.json
 emails_registry.xlsx
-cloudflared.exe
