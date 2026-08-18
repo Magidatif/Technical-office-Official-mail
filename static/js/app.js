@@ -97,6 +97,14 @@ async function loadStats() {
 // ==========================================================================
 let startDateFilter = '';
 let endDateFilter = '';
+let colTimeout = null;
+
+function debounceColFilters() {
+    clearTimeout(colTimeout);
+    colTimeout = setTimeout(() => {
+        loadEmails(1);
+    }, 500);
+}
 
 async function loadEmails(page = 1) {
     currentPage = page;
@@ -111,7 +119,9 @@ async function loadEmails(page = 1) {
     `;
 
     try {
-        let url = `/api/emails?tab=${currentTab}&query=${encodeURIComponent(searchQuery)}&start=${encodeURIComponent(startDateFilter)}&end=${encodeURIComponent(endDateFilter)}&page=${page}&limit=${currentLimit}`;
+        const exactDate = document.getElementById('colDateFilter') ? document.getElementById('colDateFilter').value : '';
+        const partyFilter = document.getElementById('colPartyFilter') ? document.getElementById('colPartyFilter').value : '';
+        let url = `/api/emails?tab=${currentTab}&query=${encodeURIComponent(searchQuery)}&start=${encodeURIComponent(startDateFilter)}&end=${encodeURIComponent(endDateFilter)}&exact_date=${encodeURIComponent(exactDate)}&party=${encodeURIComponent(partyFilter)}&page=${page}&limit=${currentLimit}`;
         const res = await fetch(url);
         const data = await res.json();
 

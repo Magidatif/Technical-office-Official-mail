@@ -186,6 +186,8 @@ def get_emails():
     search_query = request.args.get('query', '').strip().lower()
     start_date = request.args.get('start', '').strip()
     end_date = request.args.get('end', '').strip()
+    exact_date = request.args.get('exact_date', '').strip()
+    party = request.args.get('party', '').strip().lower()
     page = int(request.args.get('page', 1))
     limit = int(request.args.get('limit', 25))
 
@@ -216,6 +218,16 @@ def get_emails():
         items = [e for e in items if (e.get("datetime_received") or e.get("datetime_sent") or "")[:10] >= start_date]
     if end_date:
         items = [e for e in items if (e.get("datetime_received") or e.get("datetime_sent") or "")[:10] <= end_date]
+    if exact_date:
+        items = [e for e in items if (e.get("datetime_received") or e.get("datetime_sent") or "")[:10] == exact_date]
+
+    if party:
+        filtered = []
+        for item in items:
+            searchable = f"{item.get('sender_name', '')} {item.get('sender_email', '')} {' '.join(item.get('to_recipients_names', []))} {' '.join(item.get('to_recipients_emails', []))}".lower()
+            if party in searchable:
+                filtered.append(item)
+        items = filtered
 
     # تطبيق البحث النصي الذكي
     if search_query:
