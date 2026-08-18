@@ -262,7 +262,7 @@ def trigger_sync():
     raw_limit = req_data.get('limit', 100)
     limit = None if raw_limit in [None, 0, '0', 'all', 'الكل'] else int(raw_limit)
     download_files = bool(req_data.get('download_files', True))
-    start_date = req_data.get('start_date') or None
+    start_date = req_data.get('start_date') or '2026-01-01'
     end_date = req_data.get('end_date') or None
     merge_existing = bool(req_data.get('merge_existing', True))
 
