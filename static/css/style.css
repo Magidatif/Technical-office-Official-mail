@@ -76,7 +76,7 @@ body {
     box-shadow: var(--shadow-lg);
     margin-bottom: 24px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .app-header::before {
