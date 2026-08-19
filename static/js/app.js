@@ -35,8 +35,8 @@ function toggleTheme() {
 function updateThemeIcon(theme) {
     const btn = document.getElementById('themeToggle');
     if (btn) {
-        btn.innerHTML = theme === 'dark' 
-            ? '<i class="fa-solid fa-sun"></i>' 
+        btn.innerHTML = theme === 'dark'
+            ? '<i class="fa-solid fa-sun"></i>'
             : '<i class="fa-solid fa-moon"></i>';
     }
 }
@@ -61,7 +61,7 @@ async function loadStats() {
     try {
         const res = await fetch('/api/stats');
         const data = await res.json();
-        
+
         const inUn = data.inbox_unreplied_count || 0;
         const sentUn = data.sent_unreplied_count || 0;
         const inRep = data.inbox_replied_count || 0;
@@ -75,7 +75,7 @@ async function loadStats() {
         if (document.getElementById('statSentReplied')) document.getElementById('statSentReplied').innerText = sentRep.toLocaleString('ar-EG');
         if (document.getElementById('statInboxTotal')) document.getElementById('statInboxTotal').innerText = inTot.toLocaleString('ar-EG');
         if (document.getElementById('statSentTotal')) document.getElementById('statSentTotal').innerText = sentTot.toLocaleString('ar-EG');
-        
+
         const badgeIn = document.getElementById('badgeInboxUnreplied');
         if (badgeIn) {
             badgeIn.innerText = inUn;
@@ -179,7 +179,7 @@ function renderEmailsTable(items, startIdx) {
         const rowNum = startIdx + idx + 1;
         const isSent = item.folder === 'Sent' || !item.datetime_received;
         const statusCode = item.status_code || '';
-        
+
         let statusBadgeClass = 'unreplied';
         let statusIcon = 'fa-clock';
         let statusText = item.status || 'غير محدد';
@@ -204,16 +204,16 @@ function renderEmailsTable(items, startIdx) {
 
         const dateFormatted = formatDateTime(item.datetime_received || item.datetime_sent);
         const partyLabel = isSent ? 'إلى:' : 'من:';
-        const partyName = isSent 
+        const partyName = isSent
             ? (item.to_recipients_names && item.to_recipients_names.length ? item.to_recipients_names.join(', ') : 'إلى المستلمين')
             : (item.sender_name || item.sender_email || 'غير معروف');
-        const partyEmail = isSent 
+        const partyEmail = isSent
             ? (item.to_recipients_emails ? item.to_recipients_emails.join(', ') : '')
             : (item.sender_email || '');
 
         const attCount = (item.attachments && item.attachments.length) || (item.attachment_names && item.attachment_names.length) || 0;
-        const attBadge = attCount > 0 
-            ? `<span class="att-count-badge" title="${attCount} ملفات مرفقة"><i class="fa-solid fa-paperclip"></i> ${attCount}</span>` 
+        const attBadge = attCount > 0
+            ? `<span class="att-count-badge" title="${attCount} ملفات مرفقة"><i class="fa-solid fa-paperclip"></i> ${attCount}</span>`
             : `<span style="color:var(--text-muted); font-size:0.8rem;">-</span>`;
 
         rowsHtml += `
@@ -338,6 +338,23 @@ function openSyncModal() {
     if (modal) modal.style.display = 'flex';
 }
 
+function startSyncLast30Days() {
+    const today = new Date();
+    const past = new Date();
+    past.setDate(today.getDate() - 30);
+    
+    // Format to YYYY-MM-DD
+    const start_date = past.toISOString().split('T')[0];
+    const end_date = today.toISOString().split('T')[0];
+    
+    // Close the dropdown menu if it's open
+    const menu = document.getElementById('syncMenu');
+    if (menu) menu.classList.remove('show');
+    
+    // Call startSync with 0 limit to fetch everything within date range
+    startSync(0, true, start_date, end_date, true);
+}
+
 async function executeCustomSync() {
     const startDate = document.getElementById('syncStartDate').value || null;
     const endDate = document.getElementById('syncEndDate').value || null;
@@ -364,11 +381,11 @@ async function startSync(limit = 50, download_files = true, start_date = null, e
 
         const res = await fetch('/api/sync', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const data = await res.json();
-        
+
         if (res.ok) {
             let label = payload.limit === 0 ? 'كافة الرسائل' : `أحدث ${payload.limit} إيميل`;
             if (start_date || end_date) {
@@ -407,7 +424,7 @@ function pollSyncProgress() {
             if (!data.is_running) {
                 clearInterval(syncPollingTimer);
                 if (syncIcon) syncIcon.classList.remove('fa-spin');
-                
+
                 if (data.success) {
                     showToast('تم اكتمال سحب البريد وتحديث ملف الإكسيل بنجاح!', 'fa-circle-check');
                     loadStats();
@@ -432,7 +449,7 @@ async function checkSyncStatus() {
         if (data.is_running) {
             pollSyncProgress();
         }
-    } catch (e) {}
+    } catch (e) { }
 }
 
 // ==========================================================================
@@ -441,7 +458,7 @@ async function checkSyncStatus() {
 async function openExcelDesktop() {
     try {
         showToast('جاري فتح وتحميل ملف الإكسيل...', 'fa-file-excel');
-        fetch('/api/open-excel', { method: 'POST' }).catch(() => {});
+        fetch('/api/open-excel', { method: 'POST' }).catch(() => { });
         window.location.href = '/api/export-excel';
     } catch (e) {
         window.location.href = '/api/export-excel';
@@ -468,7 +485,7 @@ async function openLocalFile(filePath) {
         showToast('جاري فتح الملف...', 'fa-file');
         const res = await fetch('/api/open-file', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ file_path: filePath })
         });
         const data = await res.json();
@@ -496,7 +513,7 @@ async function openEmailModal(emailId) {
         document.getElementById('modalSubject').innerText = item.subject || '(بدون موضوع)';
         document.getElementById('modalSender').innerText = `${item.sender_name || ''} <${item.sender_email || ''}>`;
         document.getElementById('modalDate').innerText = formatDateTime(item.datetime_received || item.datetime_sent);
-        
+
         // Status Badge
         const badge = document.getElementById('modalStatusBadge');
         const statusCode = item.status_code || 'unreplied';
@@ -602,7 +619,7 @@ async function runComparison() {
     try {
         const res = await fetch('/api/compare', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id_a: idA, id_b: idB })
         });
         const data = await res.json();
