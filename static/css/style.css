@@ -256,6 +256,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
 }
 .dropdown-menu button:last-child {
     border-bottom: none;
