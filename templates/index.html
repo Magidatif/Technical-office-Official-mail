@@ -37,11 +37,10 @@
                         <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-right: 4px;"></i>
                     </button>
                     <div id="syncMenu" class="dropdown-menu">
-                        <button onclick="startSync(0, true, '2026-01-01')"><i class="fa-solid fa-bolt"></i> سحب كافة الرسائل من يناير 2026</button>
+                        <button onclick="startSyncLast30Days()"><i class="fa-solid fa-calendar-week"></i> سحب رسائل آخر 30 يوم</button>
                         <button onclick="startSync(100)"><i class="fa-solid fa-envelope-open-text"></i> سحب أحدث 100 إيميل</button>
                         <button onclick="startSync(500)"><i class="fa-solid fa-layer-group"></i> سحب أحدث 500 إيميل</button>
                         <button onclick="startSync(1000)"><i class="fa-solid fa-database"></i> سحب أحدث 1000 إيميل</button>
-                        <button onclick="startSyncLast30Days()"><i class="fa-solid fa-calendar-week"></i> سحب رسائل آخر 30 يوم</button>
                         <button onclick="startSync(0)"><i class="fa-solid fa-globe"></i> سحب كافة الرسائل (الكل - 3,300+)</button>
                         <hr style="margin: 6px 0; border: none; border-top: 1px solid var(--border-color);">
                         <button onclick="openSyncModal()"><i class="fa-solid fa-sliders"></i> خيارات متقدمة وسحب بالتواريخ...</button>
