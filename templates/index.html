@@ -37,7 +37,9 @@
                         <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; margin-right: 4px;"></i>
                     </button>
                     <div id="syncMenu" class="dropdown-menu">
-                        <button onclick="startSyncLast30Days()"><i class="fa-solid fa-calendar-week"></i> سحب رسائل آخر 30 يوم</button>
+                        <button onclick="startSyncLastNDays(7)"><i class="fa-solid fa-calendar-day"></i> سحب رسائل آخر 7 أيام</button>
+                        <button onclick="startSyncLastNDays(15)"><i class="fa-solid fa-calendar-days"></i> سحب رسائل آخر 15 يوم</button>
+                        <button onclick="startSyncLastNDays(30)"><i class="fa-solid fa-calendar-week"></i> سحب رسائل آخر 30 يوم</button>
                         <button onclick="startSync(100)"><i class="fa-solid fa-envelope-open-text"></i> سحب أحدث 100 إيميل</button>
                         <button onclick="startSync(500)"><i class="fa-solid fa-layer-group"></i> سحب أحدث 500 إيميل</button>
                         <button onclick="startSync(1000)"><i class="fa-solid fa-database"></i> سحب أحدث 1000 إيميل</button>

@@ -338,10 +338,10 @@ function openSyncModal() {
     if (modal) modal.style.display = 'flex';
 }
 
-function startSyncLast30Days() {
+function startSyncLastNDays(days) {
     const today = new Date();
     const past = new Date();
-    past.setDate(today.getDate() - 30);
+    past.setDate(today.getDate() - days);
     
     // Format to YYYY-MM-DD
     const start_date = past.toISOString().split('T')[0];
